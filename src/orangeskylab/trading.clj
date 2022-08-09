@@ -18,14 +18,34 @@
                :user (:user config)
                :password (:password config)})
 
-(def conn (jdbc/get-datasource db-entry))
+(def db-ds (jdbc/get-datasource db-entry))
 
 (defn all-jobs
   "retrieve all the jobs"
-  []
-  (jdbc/execute! conn
+  [ds]
+  (jdbc/execute! ds
                  (sql/format {:select [:*]
                               :from [:jobs]})))
+
+(defn process-job
+  "process job"
+  [ds key-id]
+  (jdbc/with-transaction [jdbc-txds ds]
+    (let [query (sql/format
+                 {:select [:*]
+                  :from [:jobs]
+                  :where [:and
+                          [:= :key_id key-id]
+                          [:= :done false]]
+                  :order-by [[:updated]]
+                  :limit 1
+                  :for [:update :skip-locked]})]
+      (#(do (clojure.pprint/pprint %)
+            (jdbc/execute! jdbc-txds %)) query))))
+
+(comment
+  (all-jobs db-ds)
+  (process-job db-ds 13))
 
 (defn exec
   "Invoke me with clojure -X orangeskylab.trading/exec"
