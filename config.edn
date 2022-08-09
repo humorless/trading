@@ -1,0 +1,5 @@
+{; set your dev database connection URL here
+ :database-url "jdbc:postgresql://localhost/queue?currentSchema=public"
+ :user "orange"
+ :password "orange"
+}

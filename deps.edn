@@ -1,0 +1,11 @@
+{:paths ["src"]
+ :deps  {;; Database
+         seancorfield/next.jdbc {:mvn/version "1.2.659"}
+         org.postgresql/postgresql {:mvn/version "42.4.1"}
+         com.github.seancorfield/honeysql {:mvn/version "2.3.911"}
+         
+         ;; Config
+         aero/aero {:mvn/version "1.1.6"}
+         
+         ;; Http
+         hato/hato {:mvn/version "0.8.2"}}}
