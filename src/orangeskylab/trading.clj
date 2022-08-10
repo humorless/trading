@@ -13,13 +13,16 @@
             [next.jdbc :as jdbc]
             [hato.client :as hc]))
 
+;; Read the config file
 (def config (aero/read-config "config.edn"))
 
+;; Handle the send/cancel order (http request)
 (comment
   (def c (hc/build-http-client {:connect-timeout 2000
                                 :redirect-policy :always}))
   (hc/get "https://httpbin.org/get"))
 
+;; initialize the DB connection
 (def db-entry {:jdbcUrl (:database-url config)
                :user (:user config)
                :password (:password config)})
