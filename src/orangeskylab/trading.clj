@@ -40,8 +40,11 @@
                   :order-by [[:updated]]
                   :limit 1
                   :for [:update :skip-locked]})]
-      (#(do (clojure.pprint/pprint %)
-            (jdbc/execute! jdbc-txds %)) query))))
+      (let [return (#(do (clojure.pprint/pprint %)
+                         (jdbc/execute! jdbc-txds %)) query)
+            [{:jobs/keys [id type key_id input_json priority done updated] :as row} _] return]
+        (prn row)
+        (prn id type key_id input_json)))))
 
 (comment
   (all-jobs db-ds)
