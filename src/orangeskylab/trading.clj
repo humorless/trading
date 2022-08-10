@@ -48,9 +48,17 @@
                   :for [:update :skip-locked]})]
       (let [return (#(do (clojure.pprint/pprint %)
                          (jdbc/execute! jdbc-txds %)) query)
-            [{:jobs/keys [id type key_id input_json priority done updated] :as row} _] return]
+            [{:jobs/keys [id type key_id input_json priority done updated] :as row} _] return
+            command (sql/format
+                     {:update :jobs
+                      :set {:done true}
+                      :where [:= :id id]})]
         (prn row)
-        (prn id type key_id input_json)))))
+        (prn id type key_id input_json)
+        ;; handle the http request here
+        ;; Run the update command if http request is successful
+        (#(do (clojure.pprint/pprint %)
+              (jdbc/execute! jdbc-txds %)) command)))))
 
 (comment
   (all-jobs db-ds)
