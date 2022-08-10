@@ -8,11 +8,17 @@
   The trading system needs to satisfy two requirements:
   (a) There is timeout mechanism in send/canel order.
   (b) Each key is used exclusively at any time. "
-  (:require [honey.sql :as sql]
+  (:require [aero.core :as aero]
+            [honey.sql :as sql]
             [next.jdbc :as jdbc]
-            [aero.core :as aero]))
+            [hato.client :as hc]))
 
 (def config (aero/read-config "config.edn"))
+
+(comment
+  (def c (hc/build-http-client {:connect-timeout 2000
+                                :redirect-policy :always}))
+  (hc/get "https://httpbin.org/get"))
 
 (def db-entry {:jdbcUrl (:database-url config)
                :user (:user config)
