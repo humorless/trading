@@ -1,9 +1,11 @@
 (ns orangeskylab.trading
   "The trading system does the following things:
 
-   1. Get the jobs from queue every x seconds.
-   2. According the job, send/cancel the order.
-   3. Mark the job as done in queue.
+   1. Get all the keys and create a job processing thread for each key
+   2. Inside every job processing thread:
+      a. read the job from the `jobs` queue
+      b. send/cancel the order (http request)
+      c. mark the job as done if the http request is successful
   
   The trading system needs to satisfy two requirements:
   (a) There is timeout mechanism in send/canel order.
