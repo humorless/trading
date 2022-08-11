@@ -46,7 +46,7 @@
                   :where [:and
                           [:= :key_id key-id]
                           [:= :done false]]
-                  :order-by [[:updated]]
+                  :order-by [[:priority :desc] [:updated]]
                   :limit 1
                   :for [:update :skip-locked]})]
       (let [return (#(do (clojure.pprint/pprint %)
