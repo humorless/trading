@@ -11,7 +11,8 @@
   (:require [aero.core :as aero]
             [honey.sql :as sql]
             [next.jdbc :as jdbc]
-            [hato.client :as hc]))
+            [hato.client :as hc]
+            [long-thread.core :as long-thread]))
 
 ;; Read the config file
 (def config (aero/read-config "config.edn"))
@@ -22,22 +23,22 @@
                                 :redirect-policy :always}))
   (hc/get "https://httpbin.org/get"))
 
-;; initialize the DB connection
+;; Communicate with the DB
 (def db-entry {:jdbcUrl (:database-url config)
                :user (:user config)
                :password (:password config)})
 
 (def db-ds (jdbc/get-datasource db-entry))
 
-(defn all-jobs
-  "retrieve all the jobs"
-  [ds]
+(defn dump-table
+  "retrieve all the records from table"
+  [ds table-keyword]
   (jdbc/execute! ds
                  (sql/format {:select [:*]
-                              :from [:jobs]})))
+                              :from [table-keyword]})))
 
 (defn process-job
-  "process job"
+  "process job according for specific `key-id`"
   [ds key-id]
   (jdbc/with-transaction [jdbc-txds ds]
     (let [query (sql/format
@@ -58,14 +59,53 @@
                       :where [:= :id id]})]
         (prn row)
         (prn id type key_id input_json)
-        ;; handle the http request here
-        ;; Run the update command if http request is successful
+        ;; TODO
+        ;; 1. Run send/cancel order here
+        ;; 2. Run the update command if send/cancel order successful
         (#(do (clojure.pprint/pprint %)
               (jdbc/execute! jdbc-txds %)) command)))))
 
 (comment
-  (all-jobs db-ds)
+  (dump-table db-ds :jobs)
+  (dump-table db-ds :keys)
   (process-job db-ds 13))
+
+;; Control the thread
+(defn thread-body
+  "run the process-job with certain key foreverly"
+  [key-id]
+  (long-thread/until-interrupted
+   (while true
+     (prn "inside the thread: " key-id)
+     (process-job db-ds key-id)
+     ;; sleep for 1000 milliseconds
+     (Thread/sleep 1000))))
+
+(defn create-thread
+  "create the thread with key name and key id"
+  [{:keys/keys [id name]}]
+  (prn id name)
+  (long-thread/create name (partial thread-body id)))
+
+(defn init
+  "For every key, create a thread to keep consuming the jobs of it"
+  []
+  (let [key-records (dump-table db-ds :keys)
+        thread-list (map create-thread key-records)]
+    (while true
+      (Thread/sleep 1000)
+      ;; check if any thread is stopped
+      (run! (fn [thread]
+              (prn "check thread alive: "
+                   (long-thread/alive? thread))
+              ;; TODO
+              ;; When the thread is not alive, restart it.
+              )
+            thread-list))))
+
+(comment
+  ;; init all the threads
+  (init))
 
 (defn exec
   "Invoke me with clojure -X orangeskylab.trading/exec"
