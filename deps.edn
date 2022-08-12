@@ -1,5 +1,8 @@
-{:paths ["src"]
- :deps  {;; Database
+{:paths ["src" "resources"]
+ :deps  {;; json
+         org.clojure/data.json {:mvn/version "2.4.0"}
+
+         ;; Database
          seancorfield/next.jdbc {:mvn/version "1.2.659"}
          org.postgresql/postgresql {:mvn/version "42.4.1"}
          com.github.seancorfield/honeysql {:mvn/version "2.3.911"}
@@ -9,4 +12,14 @@
          
          ;; Http
          hato/hato {:mvn/version "0.8.2"}
-         miikka/long-thread {:mvn/version "0.3.0"}}}
+
+         ;; Thread
+         miikka/long-thread {:mvn/version "0.3.0"}
+
+         ;; Log
+         io.pedestal/pedestal.log {:mvn/version "0.5.10"}
+         ch.qos.logback/logback-classic {:mvn/version "1.2.11"}
+         lambdaisland/glogi {:mvn/version "1.0.106"}
+
+         ;; Clojure
+         org.clojure/clojure {:mvn/version "1.11.1"}}}

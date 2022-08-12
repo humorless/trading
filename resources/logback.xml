@@ -1,0 +1,21 @@
+<!-- Logback configuration. See http://logback.qos.ch/manual/index.html 
+     Scan logback.xml for changes, so you can tweak log levels without restart -->
+<configuration scan="true" scanPeriod="5 seconds">
+  
+  <!-- Console output -->
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- By default, log INFO and above.  -->
+  <root level="INFO">
+    <appender-ref ref="STDOUT" />
+  </root>
+
+  <!-- For our own stuff, logging everything as a starting point. -->
+  <!-- However, fine-tuned for noisy namespaces -->
+  <logger name="orangeskylab.trading" level="ALL" />
+  <logger name="lambdaisland" level="WARN" />
+</configuration>

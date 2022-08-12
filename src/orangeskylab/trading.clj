@@ -14,10 +14,19 @@
             [honey.sql :as sql]
             [next.jdbc :as jdbc]
             [hato.client :as hc]
-            [long-thread.core :as long-thread]))
+            [long-thread.core :as long-thread]
+            [lambdaisland.glogc :as log]
+            [clojure.data.json :as json]))
 
-;; Read the config file
-(def config (aero/read-config "config.edn"))
+(comment
+  ;; JSON experiment
+  (json/read-str
+   "{\"a\":13, \"b\":27}"
+   :key-fn keyword))
+
+(def config
+  "read the config file"
+  (aero/read-config "config.edn"))
 
 ;; Handle the send/cancel order (http request)
 (comment
@@ -52,19 +61,19 @@
                   :order-by [[:priority :desc] [:updated]]
                   :limit 1
                   :for [:update :skip-locked]})]
-      (let [return (#(do (clojure.pprint/pprint %)
+      (let [return (#(do (log/debug :process-job {:sql %})
                          (jdbc/execute! jdbc-txds %)) query)
             [{:jobs/keys [id type key_id input_json priority done updated] :as row} _] return
             command (sql/format
                      {:update :jobs
                       :set {:done true}
                       :where [:= :id id]})]
-        (prn row)
-        (prn id type key_id input_json)
+        (log/trace :process-job row)
+        (log/debug :process-job {:id id :type type :key_id key_id :input_json input_json})
         ;; TODO
         ;; 1. Run send/cancel order here
         ;; 2. Run the update command if send/cancel order successful
-        (#(do (clojure.pprint/pprint %)
+        (#(do (log/debug :process-job {:sql %})
               (jdbc/execute! jdbc-txds %)) command)))))
 
 (comment
@@ -78,15 +87,16 @@
   [key-id]
   (long-thread/until-interrupted
    (while true
-     (prn "inside the thread: " key-id)
+     (log/trace :thread-body {:key-id key-id})
      (process-job db-ds key-id)
-     ;; sleep for 1000 milliseconds
-     (Thread/sleep 1000))))
+     ;; sleep for 5000 milliseconds
+     (Thread/sleep 5000))))
 
 (defn create-thread
   "create the thread with key name and key id"
   [{:keys/keys [id name]}]
-  (prn id name)
+  (log/trace :create-thread {:key-id id
+                             :key-name name})
   (long-thread/create name (partial thread-body id)))
 
 (defn init
@@ -98,8 +108,7 @@
       (Thread/sleep 1000)
       ;; check if any thread is stopped
       (run! (fn [thread]
-              (prn "check thread alive: "
-                   (long-thread/alive? thread))
+              (log/trace :init {:check-thread-alive? (long-thread/alive? thread)})
               ;; TODO
               ;; When the thread is not alive, restart it.
               )
