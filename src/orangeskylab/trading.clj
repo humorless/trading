@@ -68,6 +68,8 @@
                      {:update :jobs
                       :set {:done true}
                       :where [:= :id id]})]
+        ;; TODO
+        ;; * early return when the query results is empty
         (log/trace :process-job row)
         (log/debug :process-job {:id id :type type :key_id key_id :input_json input_json})
         ;; TODO
