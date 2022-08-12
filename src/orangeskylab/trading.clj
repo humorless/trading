@@ -108,13 +108,22 @@
       (Thread/sleep 1000)
       ;; check if any thread is stopped
       (run! (fn [thread]
-              (log/trace :init {:check-thread-alive? (long-thread/alive? thread)})
+              (log/trace :init {:check-if-thread-terminated? (.getState thread)})
               ;; TODO
               ;; When the thread is not alive, restart it.
               )
             thread-list))))
 
 (comment
+  (def eee (let [t (long-thread/create "uniq-name-hhh" (do
+                                                         (log/trace :h {:a 1})
+                                                         (throw (Exception. "my exception message"))
+                                                         (Thread/sleep 5000)))]
+             (prn "here: " (.getState t))
+             t))
+  (long-thread/threads-by-name "uniq-name-hhh")
+  (long-thread/running-threads)
+  (prn "there: " (.getState eee))
   ;; init all the threads
   (init))
 
