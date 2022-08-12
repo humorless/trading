@@ -8,6 +8,10 @@ bin/init-pg.sh
 bin/load.sh
 ```
 
+# Trouble shooting
+
+When compilation behavior seems wired, try to remove the `.cpcache` directory.
+
 # Reference
 
 1. [Using Postgres as a queue](https://gormcasper.dk/posts/using-postgres-as-a-queue/)
